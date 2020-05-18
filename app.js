@@ -1,4 +1,6 @@
 const path = require('path');
+const fs = require('fs');
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
@@ -7,19 +9,24 @@ const flash = require('connect-flash');
 const session = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(session);
 const multer = require('multer');
+const helmet = require('helmet');
+const compression = require('compression');
+const morgan = require('morgan');
 
 const errorController = require('./controllers/error');
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 const authRoutes = require('./routes/auth');
 
-const key = require('./key');
+require('dotenv').config()
 
 const User = require('./models/user');
 
+const MONGODB_URI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0ak-5rlkf.gcp.mongodb.net/${process.env.MONGO_DATABASE}?retryWrites=true&w=majority`;
+
 const app = express();
 const store = new MongoDBStore({
-    uri: key.MONGODB_URI,
+    uri: MONGODB_URI,
     collection: 'sessions'
 });
 
@@ -46,6 +53,12 @@ const fileFilter = (req, file, cb) => {
 
 app.set('view engine', 'ejs');// seta o template engine como sendo ejs
 app.set('views','views'); //mostra para o express aonde as views estao
+
+const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), {flags: 'a'});
+
+app.use(helmet());
+app.use(compression());
+app.use(morgan('combined', { stream: accessLogStream }));
 
 //extract content of incoming request; 
 app.use(bodyParser.urlencoded({ extended: false })); //urlencoded data is text data; 
@@ -110,7 +123,7 @@ app.use((error, req, res, next) => {
 });
 
 mongoose
-    .connect(key.MONGODB_URI)
+    .connect(MONGODB_URI)
     .then(result => {
         app.listen(3000);
     })

@@ -6,11 +6,11 @@ const sendgridTransport = require('nodemailer-sendgrid-transport');
 const { validationResult } = require('express-validator/check');
 
 const User = require('../models/user');
-const key = require('../key');
+require('dotenv').config()
 
 const transporter = nodemailer.createTransport(sendgridTransport({
     auth: {
-        api_key: key.sendgridApiKey
+        api_key: process.env.SENDGRID_KEY
     }
 }));
 
@@ -128,7 +128,7 @@ exports.postSignup = (req, res, next) => {
         res.redirect('/login');
         // transporter.sendMail({
         //     to: email,
-        //     from: key.email,
+        //     from: process.env.EMAIL,
         //     subject: 'Singup Succeded!',
         //     html: '<h1>You successfully signed up!</h1>'
         // });                   
@@ -181,7 +181,7 @@ exports.postReset = (req, res, next) => {
             res.redirect('/reset/${token}');
             // transporter.sendMail({
             //     to: req.body.email,
-            //     from: key.email,
+            //     from: process.env.EMAIL,
             //     subject: 'Password Reset!',
             //     html: `
             //     <p>You requested a password reset! </p>

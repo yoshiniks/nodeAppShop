@@ -116,6 +116,6 @@ dist
 
 #Files
 
-key.js
+nodemon.json
 data/
 images/**
